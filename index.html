@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aara Handmade Bangles</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #fdfbf7; color: #333; padding-bottom: 80px; }
+        header { background: #800020; color: white; text-align: center; padding: 20px; }
+        .container { padding: 15px; max-width: 800px; margin: auto; }
+        h2 { color: #800020; margin-bottom: 15px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .card { background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .card img { width: 100%; height: 160px; object-fit: cover; border-radius: 6px; }
+        .price { color: #b03060; font-weight: bold; margin: 8px 0; }
+        .btn { background: #800020; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; width: 100%; cursor: pointer; }
+        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #800020; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+        .btn-wa { background: #25D366; color: white; border: none; padding: 10px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Aara Handmade Bangles</h1>
+    <p>Exclusive Bridal Collection</p>
+</header>
+
+<div class="container">
+    <h2>Bridal Sets</h2>
+    <div class="grid">
+        <div class="card">
+            <img src="115039.jpg" alt="Bridal Bangle Set 1">
+            <h4>Bridal Set 1</h4>
+            <div class="price">₹2,100</div>
+            <button class="btn" onclick="addToCart('Bridal Set 1', 2100)">+ Add</button>
+        </div>
+        <div class="card">
+            <img src="115040.jpg" alt="Bridal Bangle Set 2">
+            <h4>Bridal Set 2</h4>
+            <div class="price">₹2,100</div>
+            <button class="btn" onclick="addToCart('Bridal Set 2', 2100)">+ Add</button>
+        </div>
+        <div class="card">
+            <img src="115043.jpg" alt="Bridal Bangle Set 3">
+            <h4>Bridal Set 3</h4>
+            <div class="price">₹2,600</div>
+            <button class="btn" onclick="addToCart('Bridal Set 3', 2600)">+ Add</button>
+        </div>
+        <div class="card">
+            <img src="115046.jpg" alt="Bridal Bangle Set 4">
+            <h4>Bridal Set 4</h4>
+            <div class="price">₹1,800</div>
+            <button class="btn" onclick="addToCart('Bridal Set 4', 1800)">+ Add</button>
+        </div>
+    </div>
+</div>
+
+<div class="cart-bar">
+    <div>Total: <strong id="total">₹0</strong></div>
+    <button class="btn-wa" onclick="sendWhatsApp()">💬 Order via WhatsApp</button>
+</div>
+
+<script>
+    let cart = [];
+    function addToCart(name, price) {
+        cart.push({name, price});
+        let total = cart.reduce((sum, item) => sum + item.price, 0);
+        document.getElementById('total').innerText = '₹' + total;
+    }
+    function sendWhatsApp() {
+        if(cart.length === 0) return alert('கார்ட்டில் பொருள் சேர்க்கவும்!');
+        let msg = "Hi Aara Handmade Bangles, I want to order:\n" + cart.map(i => `- ${i.name} (₹${i.price})`).join("\n");
+        window.open(`https://wa.me/918778695195?text=${encodeURIComponent(msg)}`);
+    }
+</script>
+
+</body>
+</html>
