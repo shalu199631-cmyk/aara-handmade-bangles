@@ -1,3 +1,4 @@
+html
 <!DOCTYPE html>
 <html lang="ta">
 <head>
@@ -42,4 +43,445 @@
     .nav-btn div { font-size: 18px; }
 
     /* Popup Modal for Cart Checkout */
-    .modal { display: none; position: fixed; top: 0; left: 0; width
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: flex-end; }
+    .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .close-btn { font-size: 24px; cursor: pointer; color: #888; border: none; background: none; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .input-group { margin-top: 12px; }
+    .input-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #444; }
+    .input-group input, .input-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+    .submit-btn { width: 100%; background: #25D366; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; margin-top: 15px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="top-header">
+      <div class="brand-title">Aara Handmade Bangles</div>
+      <div class="cart-icon-btn" onclick="openCart()">
+        🛒 <span class="cart-count" id="headerCartCount">0</span>
+      </div>
+    </div>
+    <div class="search-container">
+      🔍 <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="Search bangles, Aari accessories...">
+    </div>
+  </header>
+
+  <!-- Category Filter Highlights -->
+  <div class="categories-bar">
+    <div class="cat-card" onclick="filterCategory('all')">
+      <img src="IMG-20240423-WA0010.jpg" alt="All">
+      <p>All Items</p>
+    </div>
+    <div class="cat-card" onclick="filterCategory('bridal')">
+      <img src="IMG-20240423-WA0011.jpg" alt="Bridal">
+      <p>Bridal Sets</p>
+    </div>
+    <div class="cat-card" onclick="filterCategory('kundan')">
+      <img src="IMG-20240701-WA0019.jpg" alt="Kundan">
+      <p>Kundan Work</p>
+    </div>
+    <div class="cat-card" onclick="filterCategory('hair')">
+      <img src="IMG-20240701-WA0024.jpg" alt="Hair">
+      <p>Aari / Hair Acc.</p>
+    </div>
+  </div>
+
+  <!-- Main Product Container -->
+  <div class="container">
+    <div class="section-title" id="sectionTitle">Our Collection</div>
+    <div class="grid" id="productGrid"></div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav">
+    <div class="nav-btn" onclick="filterCategory('all')">
+      <div>🏠</div>Home
+    </div>
+    <div class="nav-btn" onclick="openCart()">
+      <div>🛒</div>Cart
+    </div>
+    <a href="https://wa.me/918778695195" target="_blank" class="nav-btn">
+      <div>💬</div>WhatsApp
+    </a>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color:#1c3b32;">My Cart</h3>
+        <button class="close-btn" onclick="closeCart()">&times;</button>
+      </div>
+
+      <div id="cartItemsContainer"></div>
+
+      <div style="margin-top:15px; font-weight:bold; font-size:15px; display:flex; justify-content:space-between; border-top:1px dashed #ccc; padding-top:10px;">
+        <span>Total Amount:</span>
+        <span style="color:#1c3b32;">₹<span id="cartTotal">0</span></span>
+      </div>
+
+      <div id="checkoutForm" style="display:none; margin-top:15px;">
+        <h4 style="color:#1c3b32; margin-bottom:8px;">Shipping Details:</h4>
+        <div class="input-group">
+          <label>Full Name *</label>
+          <input type="text" id="custName" placeholder="Enter your full name">
+        </div>
+        <div class="input-group">
+          <label>Delivery Address *</label>
+          <textarea id="custAddress" rows="2" placeholder="Full address with Pincode"></textarea>
+        </div>
+        <button class="submit-btn" onclick="sendOrderWhatsApp()">Confirm Order via WhatsApp 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 📌 Master Product List (விலை மற்றும் பெயர்களை இங்கே சுலபமாக மாற்றலாம்)
+    const products = [
+      { id: 1, category: 'bridal', name: 'Bridal Bangle Set 1', price: 2100, img: 'IMG-20240423-WA0010.jpg' },
+      { id: 2, category: 'bridal', name: 'Bridal Bangle Set 2', price: 2100, img: 'IMG-20240423-WA0011.jpg' },
+      { id: 3, category: 'kundan', name: 'Kundan Work Bangle Set', price: 2600, img: 'IMG-20240701-WA0019.jpg' },
+      { id: 4, category: 'hair', name: 'Aari Work Hair Accessories', price: 1800, img: 'IMG-20240701-WA0024.jpg' },
+      { id: 5, category: 'kundan', name: 'Custom Kundan Bangles', price: 1550, img: 'IMG-20240808-WA0009.jpg' },
+      { id: 6, category: 'hair', name: 'Aari Work Hair Pin', price: 450, img: 'IMG-20241010-WA0020.jpg' }
+    ];
+
+    let cart = [];
+
+    function renderProducts(items) {
+      const grid = document.getElementById('productGrid');
+      if (items.length === 0) {
+        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; padding: 20px; color:#777;">No products found.</p>';
+        return;
+      }
+      grid.innerHTML = items.map(p => `
+        <div class="card">
+          <img src="${p.img}" alt="${p.name}" onclick="addToCart('${p.name}', ${p.price})" onerror="this.src='https://via.placeholder.com/150?text=Aara+Handmade'">
+          <div class="card-details">
+            <div class="card-title">${p.name}</div>
+            <div class="card-price">₹${p.price}</div>
+            <button class="add-btn" onclick="addToCart('${p.name}', ${p.price})">+ ADD TO CART</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCategory(cat) {
+      if (cat === 'all') {
+        document.getElementById('sectionTitle').innerText = 'All Collection';
+        renderProducts(products);
+      } else {
+        document.getElementById('sectionTitle').innerText = cat.toUpperCase() + ' COLLECTION';
+        renderProducts(products.filter(p => p.category === cat));
+      }
+    }
+
+    function filterProducts() {
+      let query = document.getElementById('searchInput').value.toLowerCase();
+      let filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
+      renderProducts(filtered);
+    }
+
+    function addToCart(name, price) {
+      cart.push({ name, price });
+      updateCartUI();
+      openCart();
+    }
+
+    function updateCartUI() {
+      document.getElementById('headerCartCount').innerText = cart.length;
+      let container = document.getElementById('cartItemsContainer');
+      let total = cart.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('cartTotal').innerText = total;
+
+      if (cart.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#777; padding:20px;">Your cart is empty.</p>';
+        document.getElementById('checkoutForm').style.display = 'none';
+      } else {
+        container.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <span>${item.name}</span>
+            <b>₹${item.price}</b>
+          </div>
+        `).join('');
+        document.getElementById('checkoutForm').style.display = 'block';
+      }
+    }
+
+    function openCart() {
+      document.getElementById('cartModal').style.display = 'flex';
+    }
+
+    function closeCart() {
+      document.getElementById('cartModal').style.display = 'none';
+    }
+
+    function sendOrderWhatsApp() {
+      let name = document.getElementById('custName').value.trim();
+      let address = document.getElementById('custAddress').value.trim();
+
+      if (!name || !address) {
+        alert('தயவுசெய்து உங்கள் பெயர் மற்றும் முகவரியை பதிவு செய்யவும்!');
+        return;
+      }
+
+      let itemList = cart.map(i => `- ${i.name} (₹${i.price})`).join('\n');
+      let total = cart.reduce((sum, item) => sum + item.price, 0);
+
+      let msg = `Hi Aara Handmade Bangles,\n\n*New Order Placed:*\n${itemList}\n\n*Total Amount:* ₹${total}\n\n*Customer Name:* ${name}\n*Delivery Address:* ${address}`;
+
+      window.open('https://wa.me/918778695195?text=' + encodeURIComponent(msg));
+    }
+
+    // Initial Load
+    renderProducts(products);
+  </script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aara Handmade Bangles</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #faf8f5; color: #333; padding-bottom: 80px; }
+
+    /* Sticky Header */
+    header { background: #1c3b32; color: white; padding: 12px 15px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .brand-title { font-size: 19px; font-weight: bold; color: #f4d03f; letter-spacing: 0.5px; }
+    .cart-icon-btn { font-size: 22px; cursor: pointer; position: relative; }
+    .cart-count { position: absolute; top: -6px; right: -8px; background: #d9534f; color: white; font-size: 11px; font-weight: bold; border-radius: 50%; padding: 2px 6px; }
+
+    /* Search Bar */
+    .search-container { display: flex; background: white; border-radius: 20px; padding: 4px 12px; align-items: center; }
+    .search-container input { border: none; outline: none; padding: 6px; width: 100%; font-size: 13px; color: #333; }
+
+    /* Category Highlights */
+    .categories-bar { display: flex; gap: 15px; padding: 15px; overflow-x: auto; background: white; border-bottom: 1px solid #eee; }
+    .cat-card { text-align: center; flex-shrink: 0; cursor: pointer; }
+    .cat-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #1c3b32; padding: 2px; object-fit: cover; }
+    .cat-card p { font-size: 11px; margin-top: 4px; font-weight: 600; color: #444; }
+
+    /* Main Container & Product Grid */
+    .container { padding: 15px; max-width: 900px; margin: auto; }
+    .section-title { font-size: 16px; font-weight: bold; color: #1c3b32; margin: 15px 0 10px 0; border-left: 4px solid #1c3b32; padding-left: 8px; text-transform: uppercase; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 5px rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between; }
+    .card img { width: 100%; height: 160px; object-fit: cover; cursor: pointer; }
+    .card-details { padding: 10px; }
+    .card-title { font-size: 13px; font-weight: 600; color: #222; margin-bottom: 4px; height: 32px; overflow: hidden; }
+    .card-price { font-size: 14px; font-weight: bold; color: #1c3b32; margin-bottom: 8px; }
+    .add-btn { width: 100%; background: #1c3b32; color: white; border: none; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #e0e0e0; z-index: 1000; }
+    .nav-btn { text-align: center; color: #555; font-size: 11px; cursor: pointer; flex: 1; text-decoration: none; }
+    .nav-btn div { font-size: 18px; }
+
+    /* Popup Modal for Cart Checkout */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: flex-end; }
+    .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 16px 16px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .close-btn { font-size: 24px; cursor: pointer; color: #888; border: none; background: none; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .input-group { margin-top: 12px; }
+    .input-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #444; }
+    .input-group input, .input-group textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
+    .submit-btn { width: 100%; background: #25D366; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; margin-top: 15px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="top-header">
+      <div class="brand-title">Aara Handmade Bangles</div>
+      <div class="cart-icon-btn" onclick="openCart()">
+        🛒 <span class="cart-count" id="headerCartCount">0</span>
+      </div>
+    </div>
+    <div class="search-container">
+      🔍 <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="Search bangles, Aari accessories...">
+    </div>
+  </header>
+
+  <!-- Category Filter Highlights -->
+  <div class="categories-bar">
+    <div class="cat-card" onclick="filterCategory('all')">
+      <img src="IMG-20240423-WA0010.jpg" alt="All">
+      <p>All Items</p>
+    </div>
+    <div class="cat-card" onclick="filterCategory('bridal')">
+      <img src="IMG-20240423-WA0011.jpg" alt="Bridal">
+      <p>Bridal Sets</p>
+    </div>
+    <div class="cat-card" onclick="filterCategory('kundan')">
+      <img src="IMG-20240701-WA0019.jpg" alt="Kundan">
+      <p>Kundan Work</p>
+    </div>
+    <div class="cat-card" onclick="filterCategory('hair')">
+      <img src="IMG-20240701-WA0024.jpg" alt="Hair">
+      <p>Aari / Hair Acc.</p>
+    </div>
+  </div>
+
+  <!-- Main Product Container -->
+  <div class="container">
+    <div class="section-title" id="sectionTitle">Our Collection</div>
+    <div class="grid" id="productGrid"></div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="bottom-nav">
+    <div class="nav-btn" onclick="filterCategory('all')">
+      <div>🏠</div>Home
+    </div>
+    <div class="nav-btn" onclick="openCart()">
+      <div>🛒</div>Cart
+    </div>
+    <a href="https://wa.me/918778695195" target="_blank" class="nav-btn">
+      <div>💬</div>WhatsApp
+    </a>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color:#1c3b32;">My Cart</h3>
+        <button class="close-btn" onclick="closeCart()">&times;</button>
+      </div>
+
+      <div id="cartItemsContainer"></div>
+
+      <div style="margin-top:15px; font-weight:bold; font-size:15px; display:flex; justify-content:space-between; border-top:1px dashed #ccc; padding-top:10px;">
+        <span>Total Amount:</span>
+        <span style="color:#1c3b32;">₹<span id="cartTotal">0</span></span>
+      </div>
+
+      <div id="checkoutForm" style="display:none; margin-top:15px;">
+        <h4 style="color:#1c3b32; margin-bottom:8px;">Shipping Details:</h4>
+        <div class="input-group">
+          <label>Full Name *</label>
+          <input type="text" id="custName" placeholder="Enter your full name">
+        </div>
+        <div class="input-group">
+          <label>Delivery Address *</label>
+          <textarea id="custAddress" rows="2" placeholder="Full address with Pincode"></textarea>
+        </div>
+        <button class="submit-btn" onclick="sendOrderWhatsApp()">Confirm Order via WhatsApp 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 📌 Master Product List (விலை மற்றும் பெயர்களை இங்கே சுலபமாக மாற்றலாம்)
+    const products = [
+      { id: 1, category: 'bridal', name: 'Bridal Bangle Set 1', price: 2100, img: 'IMG-20240423-WA0010.jpg' },
+      { id: 2, category: 'bridal', name: 'Bridal Bangle Set 2', price: 2100, img: 'IMG-20240423-WA0011.jpg' },
+      { id: 3, category: 'kundan', name: 'Kundan Work Bangle Set', price: 2600, img: 'IMG-20240701-WA0019.jpg' },
+      { id: 4, category: 'hair', name: 'Aari Work Hair Accessories', price: 1800, img: 'IMG-20240701-WA0024.jpg' },
+      { id: 5, category: 'kundan', name: 'Custom Kundan Bangles', price: 1550, img: 'IMG-20240808-WA0009.jpg' },
+      { id: 6, category: 'hair', name: 'Aari Work Hair Pin', price: 450, img: 'IMG-20241010-WA0020.jpg' }
+    ];
+
+    let cart = [];
+
+    function renderProducts(items) {
+      const grid = document.getElementById('productGrid');
+      if (items.length === 0) {
+        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; padding: 20px; color:#777;">No products found.</p>';
+        return;
+      }
+      grid.innerHTML = items.map(p => `
+        <div class="card">
+          <img src="${p.img}" alt="${p.name}" onclick="addToCart('${p.name}', ${p.price})" onerror="this.src='https://via.placeholder.com/150?text=Aara+Handmade'">
+          <div class="card-details">
+            <div class="card-title">${p.name}</div>
+            <div class="card-price">₹${p.price}</div>
+            <button class="add-btn" onclick="addToCart('${p.name}', ${p.price})">+ ADD TO CART</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCategory(cat) {
+      if (cat === 'all') {
+        document.getElementById('sectionTitle').innerText = 'All Collection';
+        renderProducts(products);
+      } else {
+        document.getElementById('sectionTitle').innerText = cat.toUpperCase() + ' COLLECTION';
+        renderProducts(products.filter(p => p.category === cat));
+      }
+    }
+
+    function filterProducts() {
+      let query = document.getElementById('searchInput').value.toLowerCase();
+      let filtered = products.filter(p => p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query));
+      renderProducts(filtered);
+    }
+
+    function addToCart(name, price) {
+      cart.push({ name, price });
+      updateCartUI();
+      openCart();
+    }
+
+    function updateCartUI() {
+      document.getElementById('headerCartCount').innerText = cart.length;
+      let container = document.getElementById('cartItemsContainer');
+      let total = cart.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('cartTotal').innerText = total;
+
+      if (cart.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#777; padding:20px;">Your cart is empty.</p>';
+        document.getElementById('checkoutForm').style.display = 'none';
+      } else {
+        container.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <span>${item.name}</span>
+            <b>₹${item.price}</b>
+          </div>
+        `).join('');
+        document.getElementById('checkoutForm').style.display = 'block';
+      }
+    }
+
+    function openCart() {
+      document.getElementById('cartModal').style.display = 'flex';
+    }
+
+    function closeCart() {
+      document.getElementById('cartModal').style.display = 'none';
+    }
+
+    function sendOrderWhatsApp() {
+      let name = document.getElementById('custName').value.trim();
+      let address = document.getElementById('custAddress').value.trim();
+
+      if (!name || !address) {
+        alert('தயவுசெய்து உங்கள் பெயர் மற்றும் முகவரியை பதிவு செய்யவும்!');
+        return;
+      }
+
+      let itemList = cart.map(i => `- ${i.name} (₹${i.price})`).join('\n');
+      let total = cart.reduce((sum, item) => sum + item.price, 0);
+
+      let msg = `Hi Aara Handmade Bangles,\n\n*New Order Placed:*\n${itemList}\n\n*Total Amount:* ₹${total}\n\n*Customer Name:* ${name}\n*Delivery Address:* ${address}`;
+
+      window.open('https://wa.me/918778695195?text=' + encodeURIComponent(msg));
+    }
+
+    // Initial Load
+    renderProducts(products);
+  </script>
+
+</body>
+</html>
